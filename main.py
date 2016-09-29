@@ -6,28 +6,19 @@ import sqlite3
 import pygame
 from pygame.locals import K_ESCAPE, KEYDOWN, KEYUP, MOUSEBUTTONDOWN, MOUSEBUTTONUP, QUIT
 
-global FPSCLOCK, DISPLAY                                                # Create Clock and Display Vars
-global MAP_DB
-SIZE = [1120, 435]
-DISPLAY = pygame.display.set_mode(SIZE)                                 # Create Display
-FPSCLOCK = pygame.time.Clock()                                          # Create Clock 
-FPS = 60                                                                # FPS amount.
-pygame.init()                                                           # Initilize Pygame
-pygame.display.set_caption("Hyrule Warriors Interactive Map")           # Set Title
-EXIT = False                                                            # Exit program flag
 
-################################################################################################################
-################################################################################################################
-################################################################################################################
-# Plays a menu sound.  More efficent than calling multiple library components every time I need
-# a sound effect.
-def play_sound(sfx = "cursormove"):
+def play_sound(sfx ="cursormove"):
+    """Plays a menu sound.  More efficent than calling multiple library
+    components every time I need a sound effect."""
+
     sound = pygame.mixer.Sound(os.path.join("assets", sfx+".wav"))
     sound.set_volume(pygame.mixer.music.get_volume()+0.1)
     pygame.mixer.Sound.play(sound)
 
-# Draws a special text box that consists of multiple boxes (and reduces lines used)
+
 def draw_sbox(pos):
+    """Draws a special text box that consists of multiple boxes (and reduces
+    lines used)."""
     pygame.draw.rect(DISPLAY, (232,176,0), [pos[0], pos[1], pos[2], pos[3]], 5)
     pygame.draw.rect(DISPLAY, (185,125,0), [pos[0]-1, pos[1]-1, pos[2]+3, pos[3]+3], 1)
     pygame.draw.rect(DISPLAY, (0,0,0), [pos[0]-3, pos[1]-3, pos[2]+6, pos[3]+6], 2)
@@ -38,8 +29,9 @@ def draw_sbox(pos):
     pygame.draw.rect(DISPLAY, (255,255,255), [pos[0]+1, pos[1]+pos[3]-5, 4, 4])
     pygame.draw.rect(DISPLAY, (255,255,255), [pos[0]+pos[2]-5, pos[1]+pos[3]-5, 4, 4])
 
-# Load a specific tile clicked on.  Play the animation too.
+
 def load_tile(pos, is_muted = False, old_volume = 1050):
+    """Load a specific tile clicked on.  Play the animation too."""
     # Local Variables
     mouse_x = 0
     mouse_y = 0
@@ -133,8 +125,9 @@ def load_tile(pos, is_muted = False, old_volume = 1050):
         FPSCLOCK.tick(FPS)
         pygame.event.pump() # Process event queue.
 
-# Draws the grid for the map.
+
 def draw_grid():
+    """Draws the grid for the map."""
     # TEMPORARY IF STATEMENT.  REMOVE WHEN ALL MAPS ARE AVAILABLE!
     if MAP_DB != "majora":
         for i in range (1,16):
@@ -142,8 +135,10 @@ def draw_grid():
         for i in range (1,8):
             pygame.draw.line(DISPLAY, (0,0,0), (0,i*48), (1120,i*48), 2)
 
-# Pull from the database what items are given in victory conditions and draw them to the grid.
+
 def load_info(segment):
+    """Pull from the database what items are given in victory conditions and
+    draw them to the grid."""
     # Grab the font.
     font = pygame.font.Font(os.path.join("assets", "ReturnofGanon.ttf"), 20)
     DISPLAY.blit(font.render("A-Rank Requirements", 1, (255,255,0)), [35,20,150,150])
@@ -323,8 +318,10 @@ def load_info(segment):
 
             
 
-# Returns the icon set and dialog for victory rewards for a specific tile.
+
 def return_image_set(text):
+    """Returns the icon set and dialog for victory rewards for a specific
+    tile."""
     item = None
     char = None
 
@@ -368,9 +365,11 @@ def return_image_set(text):
     else:
         return text                                 # Return just text.
 
-# Advanced menu for the bottom of the screen.  If x = 0, show the default search function, if 1, keep it blank for state-text.
-# if 2, its a variant of 1 that doesn't have two hitboxes.
+
 def adv_menu_box(x=0, char="Link", item="Weapon"):
+    """Advanced menu for the bottom of the screen.  If x = 0, show the default
+    search function, if 1, keep it blank for state-text, if 2, its a variant of
+    1 that doesn't have two hitboxes."""
     pygame.draw.rect(DISPLAY, (0,0,0), [0, 385, 1100, 50])
     adv_vol_box()
     font = pygame.font.Font(os.path.join("assets", "ReturnofGanon.ttf"), 20)
@@ -414,8 +413,9 @@ def adv_menu_box(x=0, char="Link", item="Weapon"):
         if MAP_DB == "twilight": DISPLAY.blit(font.render("Twilight Map", 1, (255,255,0)), [515,400,1000,42])
         if MAP_DB == "majora": DISPLAY.blit(font.render("Majora's Mask Map", 1, (255,255,0)), [490,400,1000,42])
 
-# Option to use the help guide for helpful hints! :)
+
 def adv_help_guide():
+    """Option to use the help guide for helpful hints! :)"""
     font = pygame.font.Font(os.path.join("assets", "ReturnofGanon.ttf"), 20)
     EXIT = False
 
@@ -453,8 +453,9 @@ def adv_help_guide():
         pygame.display.update()
         FPSCLOCK.tick(FPS)
 
-# Advanced map selection of the main menu
+
 def adv_map_select():
+    """Advanced map selection of the main menu"""
     EXIT = False
     mouse_event = False
     font = pygame.font.Font(os.path.join("assets", "ReturnofGanon.ttf"), 20)
@@ -508,8 +509,9 @@ def adv_map_select():
         pygame.display.update()
         FPSCLOCK.tick(FPS)
 
-# Advanced item component of the main menu
+
 def adv_item_box():
+    """Advanced item component of the main menu"""
     EXIT = False
     mouse_event = False
 
@@ -581,8 +583,9 @@ def adv_item_box():
         pygame.display.update()
         FPSCLOCK.tick(FPS)
 
-# Advanced char component of the main menu
+
 def adv_char_box():
+    """Advanced char component of the main menu"""
     EXIT = False
     clicked_char = False
     char_hitbox = []
@@ -635,8 +638,9 @@ def adv_char_box():
         pygame.display.update()
         FPSCLOCK.tick(FPS)
 
-# Volume control knob
+
 def adv_vol_box(x = 1050):
+    """Volume control knob"""
     # Clear the previous bar.
     pygame.draw.rect(DISPLAY, (0,0,0), [1000, 400, 120, 30])
     pygame.draw.rect(DISPLAY, (232,176,0), [1005, 407, 5,10])
@@ -646,9 +650,11 @@ def adv_vol_box(x = 1050):
     if x < 1035:
         pygame.draw.line(DISPLAY, (255,0,0), (1005,400), (1015,425), 3)
 
-# This function is called when the user is grabbing/clicking the volume area.  This will automatically
-# redraw the area and push the volume bar to the correct location.
+
 def adjust_volume(x):
+    """This function is called when the user is grabbing/clicking the volume
+    area.  This will automatically redraw the area and push the volume bar to
+    the correct location."""
     MIN_X = 1030    # Min volume location
     MAX_X = 1100    # Max volume location
     OFFSET = 15     # Offset that still registers motion (so they don't have to be exact)
@@ -663,8 +669,9 @@ def adjust_volume(x):
         volume = (new_x - 1030) / 100.0
         pygame.mixer.music.set_volume(volume)
 
-# Draw the main screen after exiting a submenu.
+
 def load_menu(x=0, char="Link", item="Weapon"):
+    """Draw the main screen after exiting a submenu."""
     pygame.draw.rect(DISPLAY, (0,0,0), [0, 365, 1120, 40])
     path = os.path.join("assets", MAP_DB, "overworld.png")
     DISPLAY.blit(pygame.image.load(path), [0,0,500,500])        # Redraw Map after Exit
@@ -672,9 +679,11 @@ def load_menu(x=0, char="Link", item="Weapon"):
     draw_grid()
     adv_menu_box(x, char, item)
 
-# This function takes the adv_menu_bar values and queries the database of the correct locations, then
-# puts marks on the overwall map that match the query.
+
 def find_values(state, chars):
+    """This function takes the adv_menu_bar values and queries the database of
+    the correct locations, then puts marks on the overwall map that match the
+    query."""
     path = os.path.join("assets", "tile_data.db")
     
     #### For Weapons
@@ -852,122 +861,131 @@ def find_values(state, chars):
                 item = pygame.transform.scale(item, (50,50))
                 DISPLAY.blit(item,  [x,y,150,150])
 
-# Simple function to find if value exists in an array.  Returns true if it does.
+
 def find(self, value):
+    """Simple function to find if value exists in an array.  Returns true if it
+    does."""
     try:
         self.index(value)
         return True
     except ValueError:
         return False
 
-################################################################################################################
-################################################################################################################
-################################################################################################################
 
-# Local Variables
-volume_bar = 1050
-old_volume = 1050
-mouse_event = False
-mouse_x = 0 
-mouse_y = 0
-char = "Link"
-item = "Weapon"
-MAP_DB = "normal"
-temp_var = None
-adv_menu_state = 0                              # State of the adv_menu.
-mouse_held = False                              # State of mouse if being held down.
-is_muted = False                                # Is the sound muted?
-volume_hitbox = pygame.Rect([1020,395,100,40])  # Hitbox for the volume knob.
-path = os.path.join("assets", MAP_DB, "overworld.png")
+if __name__ == '__main__':
 
-DISPLAY.blit(pygame.image.load(path), [0,0,500,500])
-pygame.mixer.music.load(os.path.join("assets", "theme.mp3"))
-pygame.mixer.music.play(-1)
-adjust_volume(volume_bar)
-draw_grid()
-adv_menu_box()
+    SIZE = [1120, 435]
+    DISPLAY = pygame.display.set_mode(SIZE)                                 # Create Display
+    FPSCLOCK = pygame.time.Clock()                                          # Create Clock
+    FPS = 60                                                                # FPS amount.
+    pygame.init()                                                           # Initilize Pygame
+    pygame.display.set_caption("Hyrule Warriors Interactive Map")           # Set Title
+    EXIT = False                                                            # Exit program flag
 
-while not EXIT:
+    # Local Variables
+    volume_bar = 1050
+    old_volume = 1050
     mouse_event = False
     mouse_x = 0 
     mouse_y = 0
+    char = "Link"
+    item = "Weapon"
+    MAP_DB = "normal"
+    temp_var = None
+    adv_menu_state = 0                              # State of the adv_menu.
+    mouse_held = False                              # State of mouse if being held down.
+    is_muted = False                                # Is the sound muted?
+    volume_hitbox = pygame.Rect([1020,395,100,40])  # Hitbox for the volume knob.
+    path = os.path.join("assets", MAP_DB, "overworld.png")
 
-    for event in pygame.event.get():
-        if event.type == QUIT:                          # Exit (X button)
-            pygame.quit()
-            sys.exit()
-        elif event.type == MOUSEBUTTONUP:               # Mouse click/location Event
-            mouse_x, mouse_y = event.pos
-            mouse_event = True
-            mouse_held = False
-            #print event.pos
-        elif event.type == MOUSEBUTTONDOWN:
-            mouse_x, mouse_y = event.pos
-            mouse_held = True
+    DISPLAY.blit(pygame.image.load(path), [0,0,500,500])
+    pygame.mixer.music.load(os.path.join("assets", "theme.mp3"))
+    pygame.mixer.music.play(-1)
+    adjust_volume(volume_bar)
+    draw_grid()
+    adv_menu_box()
 
-    if mouse_event:
-        if mouse_y < 385:                                                                           # If they're clicking a tile, go here.
-            load_tile([mouse_x, mouse_y], is_muted, old_volume)
-            load_menu(adv_menu_state, char, item)                                                   # Reload the main menu / map.
-            if pygame.mixer.music.get_volume() == 0:
-                is_muted = True
-                adjust_volume(1030)
-            else:
-                adjust_volume((pygame.mixer.music.get_volume()*100)+1030)
-        elif mouse_y > 395:                                                                         # If they're not, figure out if they're clicking the options our sound
-            if mouse_x >= 190 and mouse_x <= 210:                                                   # Approximate Hitbox of Item Knob
-                play_sound()
-                temp_var = adv_item_box()
-                if temp_var:
-                    item = temp_var
-                    if item == "Skulltula" or item == "Items" or item == "Unlock" or item == "Costume":
-                        adv_menu_state = 2
-                    else: 
-                        adv_menu_state = 0
-                load_menu(adv_menu_state, char, item)
-                find_values(item,char)
+    while not EXIT:
+        mouse_event = False
+        mouse_x = 0 
+        mouse_y = 0
+
+        for event in pygame.event.get():
+            if event.type == QUIT:                          # Exit (X button)
+                pygame.quit()
+                sys.exit()
+            elif event.type == MOUSEBUTTONUP:               # Mouse click/location Event
+                mouse_x, mouse_y = event.pos
+                mouse_event = True
+                mouse_held = False
+                #print event.pos
+            elif event.type == MOUSEBUTTONDOWN:
+                mouse_x, mouse_y = event.pos
+                mouse_held = True
+
+        if mouse_event:
+            if mouse_y < 385:                                                                           # If they're clicking a tile, go here.
+                load_tile([mouse_x, mouse_y], is_muted, old_volume)
+                load_menu(adv_menu_state, char, item)                                                   # Reload the main menu / map.
                 if pygame.mixer.music.get_volume() == 0:
                     is_muted = True
                     adjust_volume(1030)
                 else:
                     adjust_volume((pygame.mixer.music.get_volume()*100)+1030)
-            if mouse_x >= 250 and mouse_x <= 275 and adv_menu_state != 2:                           # Approximate Hitbox of Character Knob
-                play_sound()
-                temp_var = adv_char_box()
-                if temp_var:
-                    char = temp_var
-                load_menu(adv_menu_state, char, item)
-                find_values(item,char)
-            if mouse_x >= 1000 and mouse_x <= 1020:                                                 # Approximate Hitbox of Volume Knob
-                is_muted = not is_muted
-                if is_muted:
-                    old_volume = pygame.mixer.music.get_volume() * 100 + 1030
-                    adjust_volume(1030)
-                else:
-                    adjust_volume(old_volume)
-            if mouse_x >= 470 and mouse_x <= 650:                                                   # Approximate Hitbox of Map Select
-                play_sound()
-                MAP_DB = adv_map_select()
-                load_menu(adv_menu_state, char, item)
-                if pygame.mixer.music.get_volume() == 0:
-                    is_muted = True
-                    adjust_volume(1030)
-                else:
-                    adjust_volume((pygame.mixer.music.get_volume()*100)+1030)
-            if mouse_x >= 884 and mouse_x <= 926:
-                play_sound()
-                adv_help_guide()
-                load_menu(adv_menu_state, char, item)
-                if pygame.mixer.music.get_volume() == 0:
-                    is_muted = True
-                    adjust_volume(1030)
-                else:
-                    adjust_volume((pygame.mixer.music.get_volume()*100)+1030)
+            elif mouse_y > 395:                                                                         # If they're not, figure out if they're clicking the options our sound
+                if mouse_x >= 190 and mouse_x <= 210:                                                   # Approximate Hitbox of Item Knob
+                    play_sound()
+                    temp_var = adv_item_box()
+                    if temp_var:
+                        item = temp_var
+                        if item == "Skulltula" or item == "Items" or item == "Unlock" or item == "Costume":
+                            adv_menu_state = 2
+                        else: 
+                            adv_menu_state = 0
+                    load_menu(adv_menu_state, char, item)
+                    find_values(item,char)
+                    if pygame.mixer.music.get_volume() == 0:
+                        is_muted = True
+                        adjust_volume(1030)
+                    else:
+                        adjust_volume((pygame.mixer.music.get_volume()*100)+1030)
+                if mouse_x >= 250 and mouse_x <= 275 and adv_menu_state != 2:                           # Approximate Hitbox of Character Knob
+                    play_sound()
+                    temp_var = adv_char_box()
+                    if temp_var:
+                        char = temp_var
+                    load_menu(adv_menu_state, char, item)
+                    find_values(item,char)
+                if mouse_x >= 1000 and mouse_x <= 1020:                                                 # Approximate Hitbox of Volume Knob
+                    is_muted = not is_muted
+                    if is_muted:
+                        old_volume = pygame.mixer.music.get_volume() * 100 + 1030
+                        adjust_volume(1030)
+                    else:
+                        adjust_volume(old_volume)
+                if mouse_x >= 470 and mouse_x <= 650:                                                   # Approximate Hitbox of Map Select
+                    play_sound()
+                    MAP_DB = adv_map_select()
+                    load_menu(adv_menu_state, char, item)
+                    if pygame.mixer.music.get_volume() == 0:
+                        is_muted = True
+                        adjust_volume(1030)
+                    else:
+                        adjust_volume((pygame.mixer.music.get_volume()*100)+1030)
+                if mouse_x >= 884 and mouse_x <= 926:
+                    play_sound()
+                    adv_help_guide()
+                    load_menu(adv_menu_state, char, item)
+                    if pygame.mixer.music.get_volume() == 0:
+                        is_muted = True
+                        adjust_volume(1030)
+                    else:
+                        adjust_volume((pygame.mixer.music.get_volume()*100)+1030)
 
-    if mouse_held and volume_hitbox.collidepoint(pygame.mouse.get_pos()):
-        is_muted = False
-        adjust_volume(pygame.mouse.get_pos()[0])
+        if mouse_held and volume_hitbox.collidepoint(pygame.mouse.get_pos()):
+            is_muted = False
+            adjust_volume(pygame.mouse.get_pos()[0])
 
-    pygame.display.update()
-    FPSCLOCK.tick(FPS)
-    pygame.event.pump() # Process event queue.
+        pygame.display.update()
+        FPSCLOCK.tick(FPS)
+        pygame.event.pump() # Process event queue.

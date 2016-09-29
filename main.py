@@ -17,7 +17,7 @@ EXIT = False                                                            # Exit p
 # Plays a menu sound.  More efficent than calling multiple library components every time I need
 # a sound effect.
 def play_sound(sfx = "cursormove"):
-    sound = pygame.mixer.Sound("assets\\"+sfx+".wav")
+    sound = pygame.mixer.Sound(os.path.join("assets", sfx+".wav"))
     sound.set_volume(pygame.mixer.music.get_volume()+0.1)
     pygame.mixer.Sound.play(sound)
 
@@ -50,8 +50,8 @@ def load_tile(pos, is_muted = False, old_volume = 1050):
     segment = y+x
     
     # Pull the segment filename and animate it.
-    path_main = "assets\\{}\\".format(MAP_DB)
-    path_tile = path_main+"map_segments"+"\\"+segment+".gif"
+    path_main = os.path.join("assets", MAP_DB)
+    path_tile = os.path.join(path_main, "map_segments", segment+".gif")
     try:            # Try to load it, if it doesn't exist, quit out of animation.
         image = pygame.image.load(path_tile)
     except pygame.error:
@@ -71,7 +71,7 @@ def load_tile(pos, is_muted = False, old_volume = 1050):
         # Every 5th frame, redraw the segment to prevent loss of quality.
         if i%5 == 0 or i == 1:
             image = pygame.image.load(path_tile).convert()
-            background = pygame.image.load(path_main+'overworld.png').convert()
+            background = pygame.image.load(os.path.join(path_main, 'overworld.png')).convert()
             DISPLAY.fill((0,0,0))
             background.set_alpha(50)
             DISPLAY.blit(background, [0,0,0,0])
@@ -140,10 +140,10 @@ def draw_grid():
 # Pull from the database what items are given in victory conditions and draw them to the grid.
 def load_info(segment):
     # Grab the font.
-    font = pygame.font.Font("assets\ReturnofGanon.ttf", 20)
+    font = pygame.font.Font(os.path.join("assets", "ReturnofGanon.ttf"), 20)
     DISPLAY.blit(font.render("A-Rank Requirements", 1, (255,255,0)), [35,20,150,150])
     
-    path = "assets\\tile_data.db"
+    path = os.path.join("assets", "tile_data.db")
     with sqlite3.connect(path) as connection:
         c = connection.cursor()
         c.execute("SELECT * FROM "+MAP_DB+" WHERE LOC LIKE (?)", (segment,))
@@ -188,7 +188,7 @@ def load_info(segment):
                         pygame.draw.rect(DISPLAY, (0,255,0), [205+int(xpos*36.62),int(ypos*35.15),40,38], 3)
 
                     # Display the icon of the item needed next to the square.
-                    icon_image = pygame.image.load(os.path.join('assets\icons', row[5]+'.png')).convert_alpha()
+                    icon_image = pygame.image.load(os.path.join('assets', 'icons', row[5]+'.png')).convert_alpha()
                     icon_image = pygame.transform.scale(icon_image, (36,36))
                     n = 0           # Adjust the location of the icon depending on it's position on the grid.
                     if xpos==16: n=-1 
@@ -207,7 +207,7 @@ def load_info(segment):
             # Item Card (if any)
             DISPLAY.blit(font.render("Item Card", 1, (255,255,0)), [75,280,150,150])
             if row[9] and row[9].find("[") == -1:
-                icon_image = pygame.image.load(os.path.join('assets\icons', row[9]+'.png')).convert_alpha()
+                icon_image = pygame.image.load(os.path.join('assets', 'icons', row[9]+'.png')).convert_alpha()
                 icon_image = pygame.transform.scale(icon_image, (50,50))
                 DISPLAY.blit(icon_image,  [82,312,150,150])
             else:
@@ -219,11 +219,11 @@ def load_info(segment):
 
             tile_data = return_image_set(row[7])                                # Secret Reward
             if len(tile_data) > 1 and len(tile_data) < 4:
-                item = pygame.image.load(os.path.join('assets\icons', tile_data[1])).convert_alpha()
+                item = pygame.image.load(os.path.join('assets', 'icons', tile_data[1])).convert_alpha()
                 item = pygame.transform.scale(item, (50,50))
                 DISPLAY.blit(item,  [825,25,150,150])
 
-                item = pygame.image.load(os.path.join('assets\icons', tile_data[0])).convert_alpha()
+                item = pygame.image.load(os.path.join('assets', 'icons', tile_data[0])).convert_alpha()
                 item = pygame.transform.scale(item, (45,45))
                 DISPLAY.blit(item, [840,40+(i*70),150,150])
 
@@ -235,11 +235,11 @@ def load_info(segment):
 
             tile_data = return_image_set(row[8])                                # 'A' RAnk
             if len(tile_data) > 1 and len(tile_data) < 4:
-                item = pygame.image.load(os.path.join('assets\icons', tile_data[1])).convert_alpha()
+                item = pygame.image.load(os.path.join('assets', 'icons', tile_data[1])).convert_alpha()
                 item = pygame.transform.scale(item, (50,50))
                 DISPLAY.blit(item,  [825,25+(i*70),150,150])
 
-                item = pygame.image.load(os.path.join('assets\icons', tile_data[0])).convert_alpha()
+                item = pygame.image.load(os.path.join('assets', 'icons', tile_data[0])).convert_alpha()
                 item = pygame.transform.scale(item, (45,45))
                 DISPLAY.blit(item, [840,40+(i*70),150,150])
 
@@ -251,11 +251,11 @@ def load_info(segment):
                     tile_data = return_image_set(row[x])
                     if len(tile_data) > 1 and len(tile_data) < 4:
                         new_y = 25 + (i*75) + (k*50)
-                        item = pygame.image.load(os.path.join('assets\icons', tile_data[1])).convert_alpha()
+                        item = pygame.image.load(os.path.join('assets', 'icons', tile_data[1])).convert_alpha()
                         item = pygame.transform.scale(item, (35,35))
                         DISPLAY.blit(item,  [825,new_y,150,150])
                         if tile_data[0]:
-                            item = pygame.image.load(os.path.join('assets\icons', tile_data[0])).convert_alpha()
+                            item = pygame.image.load(os.path.join('assets', 'icons', tile_data[0])).convert_alpha()
                             item = pygame.transform.scale(item, (35,35))
                             DISPLAY.blit(item,  [840,new_y+15,150,150])
 
@@ -269,16 +269,16 @@ def load_info(segment):
             # Restricted to
             if row[14] and row[14].find("[") == -1:
                 DISPLAY.blit(font.render("Limited to", 1, (255,255,0)), [40,400,200,42])
-                icon_image = pygame.image.load(os.path.join('assets\icons', row[14]+'.png')).convert_alpha()
+                icon_image = pygame.image.load(os.path.join('assets', 'icons', row[14]+'.png')).convert_alpha()
                 icon_image = pygame.transform.scale(icon_image, (35,35))
                 DISPLAY.blit(icon_image,  [110,393,150,150])
                 if row[15]:
                     try:
-                        icon_image = pygame.image.load(os.path.join('assets\icons', row[15]+'.png')).convert_alpha()
+                        icon_image = pygame.image.load(os.path.join('assets', 'icons', row[15]+'.png')).convert_alpha()
                         icon_image = pygame.transform.scale(icon_image, (35,35))
                         DISPLAY.blit(icon_image,  [137,393,150,150])
                     except pygame.error:
-                        icon_image = pygame.image.load(os.path.join('assets\icons', 'weapon.png')).convert_alpha()
+                        icon_image = pygame.image.load(os.path.join('assets', 'icons', 'weapon.png')).convert_alpha()
                         icon_image = pygame.transform.scale(icon_image, (35,35))
                         DISPLAY.blit(icon_image,  [137,393,150,150])
             else:
@@ -287,9 +287,9 @@ def load_info(segment):
             
             if row[16]:
                 if row[17]:
-                    font = pygame.font.Font("assets\ReturnofGanon.ttf", 22)
+                    font = pygame.font.Font(os.path.join("assets", "ReturnofGanon.ttf"), 22)
                 else:
-                    font = pygame.font.Font("assets\ReturnofGanon.ttf", 24)
+                    font = pygame.font.Font(os.path.join("assets", "ReturnofGanon.ttf"), 24)
                 level_text = None
                 # Get the location of the level text if it exists
                 a = row[16].find("[")
@@ -311,7 +311,7 @@ def load_info(segment):
                 else:
                     DISPLAY.blit(blurb_textbox, [x, 400, 200, 42])
 
-                font = pygame.font.Font("assets\ReturnofGanon.ttf", 24)
+                font = pygame.font.Font(os.path.join("assets", "ReturnofGanon.ttf"), 24)
                 if level_text:
                     DISPLAY.blit(font.render(level_text, 1, (255,255,255)), [900, 400, 200, 42])
             
@@ -368,7 +368,7 @@ def return_image_set(text):
 def adv_menu_box(x=0, char="Link", item="Weapon"):
     pygame.draw.rect(DISPLAY, (0,0,0), [0, 385, 1100, 50])
     adv_vol_box()
-    font = pygame.font.Font("assets\ReturnofGanon.ttf", 20)
+    font = pygame.font.Font(os.path.join("assets", "ReturnofGanon.ttf"), 20)
 
     # Default View
     if x==0: 
@@ -376,14 +376,14 @@ def adv_menu_box(x=0, char="Link", item="Weapon"):
         draw_sbox([884,390,42,42])
         draw_sbox([0,390,300,42])
         DISPLAY.blit(font.render("Show all tiles that have        for        ", 1, (255,255,0)), [15,400,1000,42])
-        item = pygame.image.load(os.path.join('assets\icons', item+".png")).convert_alpha()
+        item = pygame.image.load(os.path.join('assets', 'icons', item+".png")).convert_alpha()
         item = pygame.transform.scale(item, (20,20))
         DISPLAY.blit(item,  [190,400,150,150])
         
         try:
-            item = pygame.image.load(os.path.join('assets\icons', char+".png")).convert_alpha()
+            item = pygame.image.load(os.path.join('assets', 'icons', char+".png")).convert_alpha()
         except:
-            item = pygame.image.load(os.path.join('assets\icons', "null.png")).convert_alpha()
+            item = pygame.image.load(os.path.join('assets', 'icons', "null.png")).convert_alpha()
         item = pygame.transform.scale(item, (35,35))
         DISPLAY.blit(item,  [245,393,150,150])
     # Focused View
@@ -398,7 +398,7 @@ def adv_menu_box(x=0, char="Link", item="Weapon"):
         draw_sbox([0,390,300,42])
         DISPLAY.blit(font.render("Show all tiles that have        ", 1, (255,255,0)), [15,400,1000,42])
 
-        item = pygame.image.load(os.path.join('assets\icons', item+".png")).convert_alpha()
+        item = pygame.image.load(os.path.join('assets', 'icons', item+".png")).convert_alpha()
         item = pygame.transform.scale(item, (20,20))
         DISPLAY.blit(item,  [190,400,150,150])
 
@@ -411,7 +411,7 @@ def adv_menu_box(x=0, char="Link", item="Weapon"):
 
 # Option to use the help guide for helpful hints! :)
 def adv_help_guide():
-    font = pygame.font.Font("assets\ReturnofGanon.ttf", 20)
+    font = pygame.font.Font(os.path.join("assets", "ReturnofGanon.ttf"), 20)
     EXIT = False
 
     for i in range(1,15):
@@ -452,7 +452,7 @@ def adv_help_guide():
 def adv_map_select():
     EXIT = False
     mouse_event = False
-    font = pygame.font.Font("assets\ReturnofGanon.ttf", 20)
+    font = pygame.font.Font(os.path.join("assets", "ReturnofGanon.ttf"), 20)
 
     # Draw the Menu bar
     pygame.draw.rect(DISPLAY, (0,0,0), [475, 200, 165, 185])
@@ -481,20 +481,20 @@ def adv_map_select():
         if mouse_event:
             if mouse_x >= 475 and mouse_x <= 635:                                                           
                 if mouse_y <= 250 and mouse_y >= 210:
-                    pygame.mixer.music.load("assets\\theme.mp3")
+                    pygame.mixer.music.load(os.path.join("assets", "theme.mp3"))
                     pygame.mixer.music.play(-1)
                     return "normal"
                 if mouse_y <= 300 and mouse_y >= 255:
-                    pygame.mixer.music.load("assets\\theme2.mp3")
+                    pygame.mixer.music.load(os.path.join("assets", "theme2.mp3"))
                     pygame.mixer.music.play(-1)
                     return "master"
                 if mouse_y <= 345 and mouse_y >= 301:
-                    pygame.mixer.music.load("assets\\theme3.mp3")
+                    pygame.mixer.music.load(os.path.join("assets", "theme3.mp3"))
                     pygame.mixer.music.play(-1)
                     return "twilight"
                 if mouse_y <= 390 and mouse_y >= 346:
                     pygame.mixer.music.stop()
-                    pygame.mixer.music.load("assets\\theme4.mp3")
+                    pygame.mixer.music.load(os.path.join("assets", "theme4.mp3"))
                     pygame.mixer.music.play(-1)
                     return "majora"
             else:
@@ -516,22 +516,22 @@ def adv_item_box():
     draw_sbox([210,335,50,50])
     draw_sbox([265,335,50,50])
     draw_sbox([320,335,50,50])
-    item = pygame.image.load(os.path.join('assets\icons', "Costume.png")).convert_alpha()
+    item = pygame.image.load(os.path.join('assets', 'icons', "Costume.png")).convert_alpha()
     item = pygame.transform.scale(item, (30,30))
     DISPLAY.blit(item,  [60,345,150,150])
-    item = pygame.image.load(os.path.join('assets\icons', "Weapon.png")).convert_alpha()
+    item = pygame.image.load(os.path.join('assets', 'icons', "Weapon.png")).convert_alpha()
     item = pygame.transform.scale(item, (30,30))
     DISPLAY.blit(item,  [110,345,150,150])
-    item = pygame.image.load(os.path.join('assets\icons', "CHeart.png")).convert_alpha()
+    item = pygame.image.load(os.path.join('assets', 'icons', "CHeart.png")).convert_alpha()
     item = pygame.transform.scale(item, (30,30))
     DISPLAY.blit(item,  [165,345,150,150])
-    item = pygame.image.load(os.path.join('assets\icons', "Skulltula.png")).convert_alpha()
+    item = pygame.image.load(os.path.join('assets', 'icons', "Skulltula.png")).convert_alpha()
     item = pygame.transform.scale(item, (30,30))
     DISPLAY.blit(item,  [220,345,150,150])
-    item = pygame.image.load(os.path.join('assets\icons', "Items.png")).convert_alpha()
+    item = pygame.image.load(os.path.join('assets', 'icons', "Items.png")).convert_alpha()
     item = pygame.transform.scale(item, (30,30))
     DISPLAY.blit(item,  [275,345,150,150])
-    item = pygame.image.load(os.path.join('assets\icons', "Unlock.png")).convert_alpha()
+    item = pygame.image.load(os.path.join('assets', 'icons', "Unlock.png")).convert_alpha()
     item = pygame.transform.scale(item, (30,30))
     DISPLAY.blit(item,  [330,345,150,150])
     while not EXIT:
@@ -590,18 +590,18 @@ def adv_char_box():
             char_hitbox.append(pygame.Rect([180+((i%3)*55),5+((i/3)*55),50,50]))                        # Draw the first 18 characters.
             draw_sbox(char_hitbox[i])
             try:    
-                item = pygame.image.load(os.path.join('assets\icons', char_list[i]+".png")).convert_alpha()
+                item = pygame.image.load(os.path.join('assets', 'icons', char_list[i]+".png")).convert_alpha()
             except:
-                item = pygame.image.load(os.path.join('assets\icons', "null.png")).convert_alpha()
+                item = pygame.image.load(os.path.join('assets', 'icons', "null.png")).convert_alpha()
             item = pygame.transform.scale(item, (50,50))
             DISPLAY.blit(item, char_hitbox[i])
         else:                                                                                           # Draw the 19th (who knows when).
             char_hitbox.append(pygame.Rect([235,335,50,50]))
             draw_sbox(char_hitbox[i])
             try:    
-                item = pygame.image.load(os.path.join('assets\icons', char_list[i]+".png")).convert_alpha()
+                item = pygame.image.load(os.path.join('assets', 'icons', char_list[i]+".png")).convert_alpha()
             except:
-                item = pygame.image.load(os.path.join('assets\icons', "null.png")).convert_alpha()
+                item = pygame.image.load(os.path.join('assets', 'icons', "null.png")).convert_alpha()
             item = pygame.transform.scale(item, (50,50))
             DISPLAY.blit(item, char_hitbox[i])
 
@@ -661,7 +661,7 @@ def adjust_volume(x):
 # Draw the main screen after exiting a submenu.
 def load_menu(x=0, char="Link", item="Weapon"):
     pygame.draw.rect(DISPLAY, (0,0,0), [0, 365, 1120, 40])
-    path = "assets\\{}\\overworld.png".format(MAP_DB)
+    path = os.path.join("assets", MAP_DB, "overworld.png")
     DISPLAY.blit(pygame.image.load(path), [0,0,500,500])        # Redraw Map after Exit
     draw_sbox([0,390,1000,42])
     draw_grid()
@@ -670,7 +670,7 @@ def load_menu(x=0, char="Link", item="Weapon"):
 # This function takes the adv_menu_bar values and queries the database of the correct locations, then
 # puts marks on the overwall map that match the query.
 def find_values(state, chars):
-    path = "assets\\tile_data.db".format(MAP_DB)
+    path = os.path.join("assets", "tile_data.db")
     
     #### For Weapons
     if state == "Weapon":
@@ -695,7 +695,7 @@ def find_values(state, chars):
         for segment in segments:
             x = 70 * (ord(segment[1]) - 65) + 13
             y = 48 * (int(segment[0])-1)
-            item = pygame.image.load(os.path.join('assets\icons', "Weapon.png")).convert_alpha()
+            item = pygame.image.load(os.path.join('assets', 'icons', "Weapon.png")).convert_alpha()
             item = pygame.transform.scale(item, (45,45))
             DISPLAY.blit(item,  [x,y,150,150])
     #### For Items
@@ -709,7 +709,7 @@ def find_values(state, chars):
                 x = 70 * (ord(segment[1]) - 65) + 13
                 y = 48 * (int(segment[0])-1) 
                 #print row[0]
-                item = pygame.image.load(os.path.join('assets\icons', value+".png")).convert_alpha()
+                item = pygame.image.load(os.path.join('assets', 'icons', value+".png")).convert_alpha()
                 item = pygame.transform.scale(item, (45,45))
                 DISPLAY.blit(item,  [x,y,150,150])
     #### For Heart Containers/Pieces
@@ -762,13 +762,13 @@ def find_values(state, chars):
         for segment in segments_c:
             x = 70 * (ord(segment[1]) - 65) + 5
             y = 48 * (int(segment[0])-1) + 10
-            item = pygame.image.load(os.path.join('assets\icons', "CHeart.png")).convert_alpha()
+            item = pygame.image.load(os.path.join('assets', 'icons', "CHeart.png")).convert_alpha()
             item = pygame.transform.scale(item, (30,30))
             DISPLAY.blit(item,  [x,y,150,150])
         for segment in segments_p:
             x = 70 * (ord(segment[1]) - 65) + 35
             y = 48 * (int(segment[0])-1) + 10
-            item = pygame.image.load(os.path.join('assets\icons', "PHeart.png")).convert_alpha()
+            item = pygame.image.load(os.path.join('assets', 'icons', "PHeart.png")).convert_alpha()
             item = pygame.transform.scale(item, (30,30))
             DISPLAY.blit(item,  [x,y,150,150])  
     #### For Skulltula          
@@ -809,13 +809,13 @@ def find_values(state, chars):
         for segment in segments:
             x = 70 * (ord(segment[1]) - 65) + 5
             y = 48 * (int(segment[0])-1) + 10
-            item = pygame.image.load(os.path.join('assets\icons', "Skulltula.png")).convert_alpha()
+            item = pygame.image.load(os.path.join('assets', 'icons', "Skulltula.png")).convert_alpha()
             item = pygame.transform.scale(item, (30,30))
             DISPLAY.blit(item,  [x,y,150,150])
         for segment in excess:
             x = 70 * (ord(segment[1]) - 65) + 35
             y = 48 * (int(segment[0])-1) + 10
-            item = pygame.image.load(os.path.join('assets\icons', "Skulltula.png")).convert_alpha()
+            item = pygame.image.load(os.path.join('assets', 'icons', "Skulltula.png")).convert_alpha()
             item = pygame.transform.scale(item, (30,30))
             DISPLAY.blit(item,  [x,y,150,150])
 
@@ -829,7 +829,7 @@ def find_values(state, chars):
                 value = str(row[1])[10:-1]              # Since unlock is uniform in the database, we'll just translate it on the fly.
                 x = 70 * (ord(segment[1]) - 65) + 13
                 y = 48 * (int(segment[0])-1) + 0
-                item = pygame.image.load(os.path.join('assets\icons', value+".png")).convert_alpha()
+                item = pygame.image.load(os.path.join('assets', 'icons', value+".png")).convert_alpha()
                 item = pygame.transform.scale(item, (50,50))
                 DISPLAY.blit(item,  [x,y,150,150])
 
@@ -843,7 +843,7 @@ def find_values(state, chars):
                 value = str(row[1])[11:(row[1][11:-1].find("]"))+11]                # Costume is almost uniform.  We'll do quick math as the structure is [Costume] [Name] Description
                 x = 70 * (ord(segment[1]) - 65) + 13                                # So we searcg for the second ending bracket and return the value inside. 11 to 11+index.
                 y = 48 * (int(segment[0])-1) + 0
-                item = pygame.image.load(os.path.join('assets\icons', value+".png")).convert_alpha()
+                item = pygame.image.load(os.path.join('assets', 'icons', value+".png")).convert_alpha()
                 item = pygame.transform.scale(item, (50,50))
                 DISPLAY.blit(item,  [x,y,150,150])
 
@@ -873,10 +873,10 @@ adv_menu_state = 0                              # State of the adv_menu.
 mouse_held = False                              # State of mouse if being held down.
 is_muted = False                                # Is the sound muted?
 volume_hitbox = pygame.Rect([1020,395,100,40])  # Hitbox for the volume knob.
-path = "assets\\{}\\overworld.png".format(MAP_DB)
+path = os.path.join("assets", MAP_DB, "overworld.png")
 
 DISPLAY.blit(pygame.image.load(path), [0,0,500,500])
-pygame.mixer.music.load("assets\\theme.mp3")
+pygame.mixer.music.load(os.path.join("assets", "theme.mp3"))
 pygame.mixer.music.play(-1)
 adjust_volume(volume_bar)
 draw_grid()
@@ -901,7 +901,7 @@ while not EXIT:
             mouse_held = True
 
     if mouse_event:
-        if mouse_y < 385:                                                                           # If they're clicking a tile, go here.\
+        if mouse_y < 385:                                                                           # If they're clicking a tile, go here.
             load_tile([mouse_x, mouse_y], is_muted, old_volume)
             load_menu(adv_menu_state, char, item)                                                   # Reload the main menu / map.
             if pygame.mixer.music.get_volume() == 0:

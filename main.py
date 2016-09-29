@@ -1,54 +1,57 @@
+#!/usr/bin/env python
 import math
 import os
 import sys
 import sqlite3
 
 import pygame
-from pygame.locals import K_ESCAPE, KEYDOWN, KEYUP, MOUSEBUTTONDOWN, MOUSEBUTTONUP, QUIT
+from pygame.locals import K_ESCAPE, KEYDOWN, MOUSEBUTTONDOWN, MOUSEBUTTONUP, QUIT
 
 
-def play_sound(sfx ="cursormove"):
+SIZE = [1120, 435]
+DISPLAY = pygame.display.set_mode(SIZE)            # Create Display
+FPSCLOCK = pygame.time.Clock()                     # Create Clock
+FPS = 60                                           # FPS amount.
+VOLUME_HITBOX = pygame.Rect([1020, 395, 100, 40])  # Hitbox for the volume knob.
+IS_MUTED = False
+adv_menu_state = 0                              # State of the adv_menu.
+
+
+def play_sound(sfx="cursormove"):
     """Plays a menu sound.  More efficent than calling multiple library
     components every time I need a sound effect."""
 
-    sound = pygame.mixer.Sound(os.path.join("assets", sfx+".wav"))
-    sound.set_volume(pygame.mixer.music.get_volume()+0.1)
+    sound = pygame.mixer.Sound(os.path.join("assets", sfx + ".wav"))
+    sound.set_volume(pygame.mixer.music.get_volume() + 0.1)
     pygame.mixer.Sound.play(sound)
 
 
 def draw_sbox(pos):
     """Draws a special text box that consists of multiple boxes (and reduces
     lines used)."""
-    pygame.draw.rect(DISPLAY, (232,176,0), [pos[0], pos[1], pos[2], pos[3]], 5)
-    pygame.draw.rect(DISPLAY, (185,125,0), [pos[0]-1, pos[1]-1, pos[2]+3, pos[3]+3], 1)
-    pygame.draw.rect(DISPLAY, (0,0,0), [pos[0]-3, pos[1]-3, pos[2]+6, pos[3]+6], 2)
-    pygame.draw.rect(DISPLAY, (255,255,255), [pos[0]+3, pos[1]+3, pos[2]-6, pos[3]-6], 1)
-    pygame.draw.rect(DISPLAY, (0,0,0), [pos[0]+5, pos[1]+5, pos[2]-10, pos[3]-10], 2)
-    pygame.draw.rect(DISPLAY, (255,255,255), [pos[0]+1, pos[1]+1, 4, 4])
-    pygame.draw.rect(DISPLAY, (255,255,255), [pos[0]+pos[2]-5, pos[1]+1, 4, 4])
-    pygame.draw.rect(DISPLAY, (255,255,255), [pos[0]+1, pos[1]+pos[3]-5, 4, 4])
-    pygame.draw.rect(DISPLAY, (255,255,255), [pos[0]+pos[2]-5, pos[1]+pos[3]-5, 4, 4])
+    pygame.draw.rect(DISPLAY, (232, 176, 0), [pos[0], pos[1], pos[2], pos[3]], 5)
+    pygame.draw.rect(DISPLAY, (185, 125, 0), [pos[0] - 1, pos[1] - 1, pos[2] + 3, pos[3] + 3], 1)
+    pygame.draw.rect(DISPLAY, (0, 0, 0), [pos[0] - 3, pos[1] - 3, pos[2] + 6, pos[3] + 6], 2)
+    pygame.draw.rect(DISPLAY, (255, 255, 255), [pos[0] + 3, pos[1] + 3, pos[2] - 6, pos[3] - 6], 1)
+    pygame.draw.rect(DISPLAY, (0, 0, 0), [pos[0] + 5, pos[1] + 5, pos[2] - 10, pos[3] - 10], 2)
+    pygame.draw.rect(DISPLAY, (255, 255, 255), [pos[0] + 1, pos[1] + 1, 4, 4])
+    pygame.draw.rect(DISPLAY, (255, 255, 255), [pos[0] + pos[2] - 5, pos[1] + 1, 4, 4])
+    pygame.draw.rect(DISPLAY, (255, 255, 255), [pos[0] + 1, pos[1] + pos[3] - 5, 4, 4])
+    pygame.draw.rect(DISPLAY, (255, 255, 255), [pos[0] + pos[2] - 5, pos[1] + pos[3] - 5, 4, 4])
 
 
-def load_tile(pos, is_muted = False, old_volume = 1050):
+def load_tile(pos, map_name='normal', old_volume=1050):
     """Load a specific tile clicked on.  Play the animation too."""
-    # Local Variables
-    mouse_x = 0
-    mouse_y = 0
-    EXIT = False
-    mouse_held = False
-    mouse_event = False
-    volume_hitbox = pygame.Rect([1020,395,100,40])  # Hitbox for the volume knob.
 
     # Letters dictate it's X position, numbers dictate it's Y position.
     # Converts the x/y position in the alphanumeric codes for each section of map
-    x = chr(65 + (pos[0]/70))
-    y = str(int(1+math.floor(pos[1]/48.125)))
-    segment = y+x
-    
+    x_ord = chr(65 + (pos[0] // 70))
+    y_ord = str(int(1 + math.floor(pos[1] / 48.125)))
+    segment = y_ord + x_ord
+
     # Pull the segment filename and animate it.
-    path_main = os.path.join("assets", MAP_DB)
-    path_tile = os.path.join(path_main, "map_segments", segment+".gif")
+    path_main = os.path.join("assets", map_name)
+    path_tile = os.path.join(path_main, "map_segments", segment + ".gif")
     try:            # Try to load it, if it doesn't exist, quit out of animation.
         image = pygame.image.load(path_tile)
     except pygame.error:
@@ -56,25 +59,25 @@ def load_tile(pos, is_muted = False, old_volume = 1050):
 
     play_sound("zoomin")
     image = image.convert()
-    for i in range(1,31):
+    for i in range(1, 31):
         ratio = i / 30.0
-        x = 70 + int(516*ratio)
-        y = 42 + int(343*ratio)
+        width = 70 + int(516 * ratio)
+        height = 42 + int(343 * ratio)
 
         # Move the lefthand quarter towards the center from it's position on the field.
-        x_pos = int((i/30.0)*207) + int(((30-i)/30.0)*pos[0])
-        y_pos = int(((30-i)/30.0)*pos[1])
-        
+        x_pos = int((i / 30.0) * 207) + int(((30 - i) / 30.0) * pos[0])
+        y_pos = int(((30 - i) / 30.0) * pos[1])
+
         # Every 5th frame, redraw the segment to prevent loss of quality.
-        if i%5 == 0 or i == 1:
+        if i % 5 == 0 or i == 1:
             image = pygame.image.load(path_tile).convert()
             background = pygame.image.load(os.path.join(path_main, 'overworld.png')).convert()
-            DISPLAY.fill((0,0,0))
+            DISPLAY.fill((0, 0, 0))
             background.set_alpha(50)
-            DISPLAY.blit(background, [0,0,0,0])
-            
-        image = pygame.transform.scale(image, (x,y))
-        DISPLAY.blit(image, [x_pos,y_pos,1000,1000])
+            DISPLAY.blit(background, [0, 0, 0, 0])
+
+        image = pygame.transform.scale(image, (width, height))
+        DISPLAY.blit(image, [x_pos, y_pos, 1000, 1000])
         pygame.display.update()
         FPSCLOCK.tick(FPS)
 
@@ -86,86 +89,140 @@ def load_tile(pos, is_muted = False, old_volume = 1050):
     adv_menu_box(1)
 
     # Draw the info
-    load_info(segment)
+    load_info(map_name, segment)
 
-    adv_vol_box((pygame.mixer.music.get_volume()*100)+1030)
+    adv_vol_box((pygame.mixer.music.get_volume() * 100) + 1030)
 
-    while not EXIT:
-        #Event Handling
+    event_loop(mode='detail')
+
+
+def event_loop(mode='global'):
+    global IS_MUTED
+    exit = False
+    while exit is False:
+        mouse_event = False
+        mouse_held = False
+
         for event in pygame.event.get():
             if event.type == QUIT:                              # Exit (X button)
                 pygame.quit()
                 sys.exit()
-            if event.type == KEYDOWN and event.key == K_ESCAPE or event.type == MOUSEBUTTONUP and event.button == 3:    # Back to Main Map (Escape)
-                play_sound("zoomout")
-                EXIT = True
+
             if event.type == MOUSEBUTTONUP:             # Mouse click/location Event
-                mouse_x, mouse_y = event.pos
-                #print mouse_x, mouse_y
                 mouse_event = True
-                mouse_held = False
             if event.type == MOUSEBUTTONDOWN:
                 mouse_held = True
-            if mouse_held and volume_hitbox.collidepoint(pygame.mouse.get_pos()):
+
+            if mode == 'global':
+                handle_global_event(event, is_mouse=mouse_event)
+            if mode == 'detail':
+                exit = handle_detail_event(event)
+
+            if mouse_held and VOLUME_HITBOX.collidepoint(pygame.mouse.get_pos()):
                 adjust_volume(pygame.mouse.get_pos()[0])
 
         if mouse_event:
+            mouse_x, mouse_y = event.pos
             if mouse_x >= 1000 and mouse_x <= 1020 and mouse_y > 395:
-                is_muted = not is_muted
-                if is_muted:
+                IS_MUTED = not IS_MUTED
+                if IS_MUTED:
                     old_volume = pygame.mixer.music.get_volume() * 100 + 1030
                     adjust_volume(1030)
                 else:
                     adjust_volume(old_volume)
 
-            mouse_event = False
-
         # Update and Purge Events
         pygame.display.update()
         FPSCLOCK.tick(FPS)
-        pygame.event.pump() # Process event queue.
+        pygame.event.pump()  # Process event queue.
 
 
-def draw_grid():
+def handle_global_event(event, is_mouse):
+    global adv_menu_state
+    if is_mouse:
+        mouse_x, mouse_y = event.pos
+        if mouse_y < 385:                                                        # If they're clicking a tile, go here.
+            load_tile([mouse_x, mouse_y])
+            load_menu(adv_menu_state)                                            # Reload the main menu / map.
+        elif mouse_y > 395:                                                      # If they're not, figure out if they're clicking the options our sound
+            if mouse_x >= 190 and mouse_x <= 210:                                # Approximate Hitbox of Item Knob
+                play_sound()
+                temp_var = adv_item_box()
+                if temp_var:
+                    item = temp_var
+                    if item in ["Skulltulaa", "Items", "Unlock", "Costume"]:
+                        adv_menu_state = 2
+                    else:
+                        adv_menu_state = 0
+                load_menu(adv_menu_state, char, item)
+                find_values(item, char)
+            if mouse_x >= 250 and mouse_x <= 275 and adv_menu_state != 2:        # Approximate Hitbox of Character Knob
+                play_sound()
+                temp_var = adv_char_box()
+                if temp_var:
+                    char = temp_var
+                load_menu(adv_menu_state, char, item)
+                find_values(item, char)
+            if mouse_x >= 470 and mouse_x <= 650:                                # Approximate Hitbox of Map Select
+                play_sound()
+                MAP_DB = adv_map_select()
+                load_menu(adv_menu_state, char, item)
+            if mouse_x >= 884 and mouse_x <= 926:
+                play_sound()
+                adv_help_guide()
+                load_menu(adv_menu_state, char, item)
+
+
+def handle_detail_event(event):
+    exit = False
+    if (event.type == KEYDOWN and event.key == K_ESCAPE) or (event.type == MOUSEBUTTONUP and event.button == 3):    # Back to Main Map (Escape)
+        play_sound("zoomout")
+        load_menu()
+        exit = True
+    return exit
+
+
+def draw_grid(map_name):
     """Draws the grid for the map."""
-    # TEMPORARY IF STATEMENT.  REMOVE WHEN ALL MAPS ARE AVAILABLE!
-    if MAP_DB != "majora":
-        for i in range (1,16):
-            pygame.draw.line(DISPLAY, (0,0,0), (i*70,0), (i*70,385), 2)
-        for i in range (1,8):
-            pygame.draw.line(DISPLAY, (0,0,0), (0,i*48), (1120,i*48), 2)
+    # FIXME: TEMPORARY IF STATEMENT.  REMOVE WHEN ALL MAPS ARE AVAILABLE!
+    if map_name != "majora":
+        for i in range(1, 16):
+            pygame.draw.line(DISPLAY, (0, 0, 0), (i * 70, 0), (i * 70, 385), 2)
+        for i in range(1, 8):
+            pygame.draw.line(DISPLAY, (0, 0, 0), (0, i * 48), (1120, i * 48), 2)
 
 
-def load_info(segment):
+def load_info(map_name, segment):
     """Pull from the database what items are given in victory conditions and
     draw them to the grid."""
     # Grab the font.
     font = pygame.font.Font(os.path.join("assets", "ReturnofGanon.ttf"), 20)
-    DISPLAY.blit(font.render("A-Rank Requirements", 1, (255,255,0)), [35,20,150,150])
-    
+    DISPLAY.blit(font.render("A-Rank Requirements", 1, (255, 255, 0)), [35, 20, 150, 150])
+
     path = os.path.join("assets", "tile_data.db")
     with sqlite3.connect(path) as connection:
         c = connection.cursor()
-        c.execute("SELECT * FROM "+MAP_DB+" WHERE LOC LIKE (?)", (segment,))
+        c.execute("SELECT * FROM " + map_name + " WHERE LOC LIKE (?)", (segment,))
         for row in c.fetchall():
-            #print row                                                              # DEBUG DEBUG
-
             # Temp variables to fill out a rank information easily.
-            a,b,c = "N/A","N/A","N/A"
-            if row[1]!="0": a=row[1]
-            if row[2]!="0": b=row[2]
-            if row[3]!="0": c=row[3]
+            a, b, c = "N/A", "N/A", "N/A"
+            if row[1] != "0":
+                a = row[1]
+            if row[2] != "0":
+                b = row[2]
+            if row[3] != "0":
+                c = row[3]
 
             # Draw 'A' Rank Requirements
-            DISPLAY.blit(font.render("KOs:", 1, (255,255,0)), [30,60,150,150])
-            DISPLAY.blit(font.render("Time:", 1, (255,255,0)), [30,90,150,150])
-            DISPLAY.blit(font.render("Damage:", 1, (255,255,0)), [30,120,150,150])
+            DISPLAY.blit(font.render("KOs:", 1, (255, 255, 0)), [30, 60, 150, 150])
+            DISPLAY.blit(font.render("Time:", 1, (255, 255, 0)), [30, 90, 150, 150])
+            DISPLAY.blit(font.render("Damage:", 1, (255, 255, 0)), [30, 120, 150, 150])
 
-            DISPLAY.blit(font.render(a, 1, (255,255,0)), [140,60,150,150])
-            DISPLAY.blit(font.render(b, 1, (255,255,0)), [140,90,150,150])
-            DISPLAY.blit(font.render(c, 1, (255,255,0)), [140,120,150,150])
+            DISPLAY.blit(font.render(a, 1, (255, 255, 0)), [140, 60, 150, 150])
+            DISPLAY.blit(font.render(b, 1, (255, 255, 0)), [140, 90, 150, 150])
+            DISPLAY.blit(font.render(c, 1, (255, 255, 0)), [140, 120, 150, 150])
 
-            if row[4]:                                          #Show off the Secret Region (if it exists)
+            if row[4]:                                          # Show off the Secret Region (if it exists)
                 if row[4] != "Unknown":
                     if len(row[4]) > 3:
                         xpos = int(row[4][0:2]) - 1
@@ -181,38 +238,39 @@ def load_info(segment):
                     # Due to the map tiles of normal/master has 10.5 blocks (in y)
                     # and the twilight/majora's mask has 11, the calculation must be adjusted
                     # accordingly.  Remember kids, do your math.  DO IT.  DO THE MATHS.
-                    offset = 0
-                    if MAP_DB != "twilight":
-                        pygame.draw.rect(DISPLAY, (0,255,0), [205+int(xpos*36.62),int(ypos*36.6),40,38], 3)
+                    if map_name != "twilight":
+                        pygame.draw.rect(DISPLAY, (0, 255, 0), [205 + int(xpos * 36.62), int(ypos * 36.6), 40, 38], 3)
                     else:
-                        pygame.draw.rect(DISPLAY, (0,255,0), [205+int(xpos*36.62),int(ypos*35.15),40,38], 3)
+                        pygame.draw.rect(DISPLAY, (0, 255, 0), [205 + int(xpos * 36.62), int(ypos * 35.15), 40, 38], 3)
 
                     # Display the icon of the item needed next to the square.
-                    icon_image = pygame.image.load(os.path.join('assets', 'icons', row[5]+'.png')).convert_alpha()
-                    icon_image = pygame.transform.scale(icon_image, (36,36))
+                    icon_image = pygame.image.load(os.path.join('assets', 'icons', row[5] + '.png')).convert_alpha()
+                    icon_image = pygame.transform.scale(icon_image, (36, 36))
                     n = 0           # Adjust the location of the icon depending on it's position on the grid.
-                    if xpos==16: n=-1 
-                    else: n=1
-                    DISPLAY.blit(icon_image,  [205+int((xpos+n)*36.62),int(ypos*35),40,38])
+                    if xpos == 16:
+                        n = -1
+                    else:
+                        n = 1
+                    DISPLAY.blit(icon_image, [205 + int((xpos + n) * 36.62), int(ypos * 35), 40, 38])
                 else:
-                    pygame.draw.rect(DISPLAY, (0,0,0), [350,100,300,50])
-                    draw_sbox([355,105,290,42])
-                    DISPLAY.blit(font.render("Item Location Not Found Yet!", 1, (255,255,0)), [400,118,150,150])
+                    pygame.draw.rect(DISPLAY, (0, 0, 0), [350, 100, 300, 50])
+                    draw_sbox([355, 105, 290, 42])
+                    DISPLAY.blit(font.render("Item Location Not Found Yet!", 1, (255, 255, 0)), [400, 118, 150, 150])
 
             # Condition.  Find the center of the text box and place it's local position so it's always centered in the box.
-            DISPLAY.blit(font.render("Conditions", 1, (255,255,0)), [72,182,150,150])
-            d_text = font.render(row[6], 1, (255,255,0))
-            DISPLAY.blit(d_text, [55+(50-d_text.get_rect()[2]/2),220,150,150])
+            DISPLAY.blit(font.render("Conditions", 1, (255, 255, 0)), [72, 182, 150, 150])
+            d_text = font.render(row[6], 1, (255, 255, 0))
+            DISPLAY.blit(d_text, [55 + (50 - d_text.get_rect()[2] / 2), 220, 150, 150])
 
             # Item Card (if any)
-            DISPLAY.blit(font.render("Item Card", 1, (255,255,0)), [75,280,150,150])
+            DISPLAY.blit(font.render("Item Card", 1, (255, 255, 0)), [75, 280, 150, 150])
             if row[9] and row[9].find("[") == -1:
                 icon_image = pygame.image.load(os.path.join('assets', 'icons', row[9]+'.png')).convert_alpha()
                 icon_image = pygame.transform.scale(icon_image, (50,50))
                 DISPLAY.blit(icon_image,  [82,312,150,150])
             else:
                 DISPLAY.blit(font.render("None", 1, (255,255,0)), [88,325,150,150])
-        
+
             # Also we judge the size between 1-3 as a text will always exceed 3, but the tuple (if it)
             # Exists, will not.  I/K are variables to adjust the Y position of the icons
             i,k = 0,0
@@ -278,13 +336,13 @@ def load_info(segment):
                         icon_image = pygame.transform.scale(icon_image, (35,35))
                         DISPLAY.blit(icon_image,  [137,393,150,150])
                     except pygame.error:
-                        icon_image = pygame.image.load(os.path.join('assets', 'icons', 'weapon.png')).convert_alpha()
+                        icon_image = pygame.image.load(os.path.join('assets', 'icons', 'Weapon.png')).convert_alpha()
                         icon_image = pygame.transform.scale(icon_image, (35,35))
                         DISPLAY.blit(icon_image,  [137,393,150,150])
             else:
                 DISPLAY.blit(font.render("No Restrictions", 1, (255,255,0)), [45,400,200,42])
 
-            
+
             if row[16]:
                 if row[17]:
                     font = pygame.font.Font(os.path.join("assets", "ReturnofGanon.ttf"), 22)
@@ -314,9 +372,6 @@ def load_info(segment):
                 font = pygame.font.Font(os.path.join("assets", "ReturnofGanon.ttf"), 24)
                 if level_text:
                     DISPLAY.blit(font.render(level_text, 1, (255,255,255)), [900, 400, 200, 42])
-            
-
-            
 
 
 def return_image_set(text):
@@ -359,30 +414,30 @@ def return_image_set(text):
         return text                                 # Return just text.
 
 
-def adv_menu_box(x=0, char="Link", item="Weapon"):
+def adv_menu_box(x=0, char="Link", item="Weapon", map_name='normal'):
     """Advanced menu for the bottom of the screen.  If x = 0, show the default
     search function, if 1, keep it blank for state-text, if 2, its a variant of
     1 that doesn't have two hitboxes."""
-    pygame.draw.rect(DISPLAY, (0,0,0), [0, 385, 1100, 50])
+    pygame.draw.rect(DISPLAY, (0, 0, 0), [0, 385, 1100, 50])
     adv_vol_box()
     font = pygame.font.Font(os.path.join("assets", "ReturnofGanon.ttf"), 20)
 
     # Default View
-    if x==0: 
-        DISPLAY.blit(font.render("?", 1, (255,255,255)), [900,400,1000,42])
-        draw_sbox([884,390,42,42])
-        draw_sbox([0,390,300,42])
-        DISPLAY.blit(font.render("Show all tiles that have        for        ", 1, (255,255,0)), [15,400,1000,42])
+    if x == 0:
+        DISPLAY.blit(font.render("?", 1, (255, 255, 255)), [900, 400, 1000, 42])
+        draw_sbox([884, 390, 42, 42])
+        draw_sbox([0, 390, 300, 42])
+        DISPLAY.blit(font.render("Show all tiles that have        for        ", 1, (255, 255, 0)), [15, 400, 1000, 42])
         item = pygame.image.load(os.path.join('assets', 'icons', item+".png")).convert_alpha()
         item = pygame.transform.scale(item, (20,20))
-        DISPLAY.blit(item,  [190,400,150,150])
-        
+        DISPLAY.blit(item, [190,400,150,150])
+
         try:
             item = pygame.image.load(os.path.join('assets', 'icons', char+".png")).convert_alpha()
         except:
             item = pygame.image.load(os.path.join('assets', 'icons', "null.png")).convert_alpha()
         item = pygame.transform.scale(item, (35,35))
-        DISPLAY.blit(item,  [245,393,150,150])
+        DISPLAY.blit(item, [245,393,150,150])
     # Focused View
     if x==1:
         draw_sbox([0,390,200,42])
@@ -397,14 +452,18 @@ def adv_menu_box(x=0, char="Link", item="Weapon"):
 
         item = pygame.image.load(os.path.join('assets', 'icons', item+".png")).convert_alpha()
         item = pygame.transform.scale(item, (20,20))
-        DISPLAY.blit(item,  [190,400,150,150])
+        DISPLAY.blit(item, [190,400,150,150])
 
-    if x==0 or x==2:
-        draw_sbox([475,390,160,42])
-        if MAP_DB == "normal": DISPLAY.blit(font.render("Adventure Map", 1, (255,255,0)), [505,400,1000,42])
-        if MAP_DB == "master": DISPLAY.blit(font.render("Master Quest Map", 1, (255,255,0)), [492,400,1000,42])
-        if MAP_DB == "twilight": DISPLAY.blit(font.render("Twilight Map", 1, (255,255,0)), [515,400,1000,42])
-        if MAP_DB == "majora": DISPLAY.blit(font.render("Majora's Mask Map", 1, (255,255,0)), [490,400,1000,42])
+    if x == 0 or x == 2:
+        draw_sbox([475, 390, 160, 42])
+        if map_name == "normal":
+            DISPLAY.blit(font.render("Adventure Map", 1, (255, 255, 0)), [505, 400, 1000, 42])
+        elif map_name == "master":
+            DISPLAY.blit(font.render("Master Quest Map", 1, (255, 255, 0)), [492, 400, 1000, 42])
+        elif map_name == "twilight":
+            DISPLAY.blit(font.render("Twilight Map", 1, (255, 255, 0)), [515, 400, 1000, 42])
+        elif map_name == "majora":
+            DISPLAY.blit(font.render("Majora's Mask Map", 1, (255, 255, 0)), [490, 400, 1000, 42])
 
 
 def adv_help_guide():
@@ -478,7 +537,7 @@ def adv_map_select():
                 mouse_event = True
 
         if mouse_event:
-            if mouse_x >= 475 and mouse_x <= 635:                                                           
+            if mouse_x >= 475 and mouse_x <= 635:
                 if mouse_y <= 250 and mouse_y >= 210:
                     pygame.mixer.music.load(os.path.join("assets", "theme.mp3"))
                     pygame.mixer.music.play(-1)
@@ -548,17 +607,17 @@ def adv_item_box():
                 mouse_event = True
 
         if mouse_event:
-            if mouse_y >= 345 and mouse_y <= 375:                                                           
-                if mouse_x >= 100 and mouse_x <= 164:                                               
+            if mouse_y >= 345 and mouse_y <= 375:
+                if mouse_x >= 100 and mouse_x <= 164:
                     play_sound()
                     return "Weapon"
-                elif mouse_x >= 165 and mouse_x <= 219:                                                 
+                elif mouse_x >= 165 and mouse_x <= 219:
                     play_sound()
                     return "CHeart"
-                elif mouse_x >= 220 and mouse_x <= 274:                                                 
+                elif mouse_x >= 220 and mouse_x <= 274:
                     play_sound()
                     return "Skulltula"
-                elif mouse_x >= 275 and mouse_x <= 314:                                                 
+                elif mouse_x >= 275 and mouse_x <= 314:
                     play_sound()
                     return "Items"
                 elif mouse_x >= 315 and mouse_x <= 370:
@@ -587,10 +646,10 @@ def adv_char_box():
     pygame.draw.rect(DISPLAY, (0,0,0), [180, 10, 165, 325])
     pygame.draw.rect(DISPLAY, (0,0,0), [235,335,50,50])
     for i in range(0,19):
-        if i < 18:  
+        if i < 18:
             char_hitbox.append(pygame.Rect([180+((i%3)*55),5+((i/3)*55),50,50]))                        # Draw the first 18 characters.
             draw_sbox(char_hitbox[i])
-            try:    
+            try:
                 item = pygame.image.load(os.path.join('assets', 'icons', char_list[i]+".png")).convert_alpha()
             except:
                 item = pygame.image.load(os.path.join('assets', 'icons', "null.png")).convert_alpha()
@@ -599,7 +658,7 @@ def adv_char_box():
         else:                                                                                           # Draw the 19th (who knows when).
             char_hitbox.append(pygame.Rect([235,335,50,50]))
             draw_sbox(char_hitbox[i])
-            try:    
+            try:
                 item = pygame.image.load(os.path.join('assets', 'icons', char_list[i]+".png")).convert_alpha()
             except:
                 item = pygame.image.load(os.path.join('assets', 'icons', "null.png")).convert_alpha()
@@ -663,13 +722,13 @@ def adjust_volume(x):
         pygame.mixer.music.set_volume(volume)
 
 
-def load_menu(x=0, char="Link", item="Weapon"):
+def load_menu(x=0, char="Link", item="Weapon", map_name='normal'):
     """Draw the main screen after exiting a submenu."""
-    pygame.draw.rect(DISPLAY, (0,0,0), [0, 365, 1120, 40])
-    path = os.path.join("assets", MAP_DB, "overworld.png")
-    DISPLAY.blit(pygame.image.load(path), [0,0,500,500])        # Redraw Map after Exit
-    draw_sbox([0,390,1000,42])
-    draw_grid()
+    pygame.draw.rect(DISPLAY, (0, 0, 0), [0, 365, 1120, 40])
+    path = os.path.join("assets", map_name, "overworld.png")
+    DISPLAY.blit(pygame.image.load(path), [0, 0, 500, 500])        # Redraw Map after Exit
+    draw_sbox([0, 390, 1000, 42])
+    draw_grid(map_name)
     adv_menu_box(x, char, item)
 
 
@@ -678,13 +737,13 @@ def find_values(state, chars):
     the correct locations, then puts marks on the overwall map that match the
     query."""
     path = os.path.join("assets", "tile_data.db")
-    
+
     #### For Weapons
     if state == "Weapon":
         item = "%Weapon%"
         char = "%["+chars+"]%"
         segments = []
-    
+
         # We return the string from index [3-5] because as the query returns a unicode value that doesn't like string
         # comparison, so we translate it on the fly and stick it in an array for the function to walk through later.
         with sqlite3.connect(path) as connection:
@@ -714,7 +773,7 @@ def find_values(state, chars):
                 segment = row[0]
                 value = row[1]
                 x = 70 * (ord(segment[1]) - 65) + 13
-                y = 48 * (int(segment[0])-1) 
+                y = 48 * (int(segment[0])-1)
                 #print row[0]
                 item = pygame.image.load(os.path.join('assets', 'icons', value+".png")).convert_alpha()
                 item = pygame.transform.scale(item, (45,45))
@@ -725,7 +784,7 @@ def find_values(state, chars):
         char = "%"+chars+"%"
         segments_c = []
         segments_p = []         # P is the array of pieces of heart.  C is the array of the Complete hearts.  Just for easier handling.
-        
+
         # We return the string from index [3-5] because as the query returns a unicode value that doesn't like string
         # comparison, so we translate it on the fly and stick it in an array for the function to walk through later.
         # I feel like there is a more elegant way to do a query of this type, but no research has turned up anything.
@@ -777,13 +836,13 @@ def find_values(state, chars):
             y = 48 * (int(segment[0])-1) + 10
             item = pygame.image.load(os.path.join('assets', 'icons', "PHeart.png")).convert_alpha()
             item = pygame.transform.scale(item, (30,30))
-            DISPLAY.blit(item,  [x,y,150,150])  
-    #### For Skulltula          
+            DISPLAY.blit(item,  [x,y,150,150])
+    #### For Skulltula
     if state == "Skulltula":
         with sqlite3.connect(path) as connection:
             c = connection.cursor()
             # If something exists in the first array, we put it in the excess array so it
-            # Properly renders on the tileset. 
+            # Properly renders on the tileset.
             segments = []
             excess = []
 
@@ -830,17 +889,17 @@ def find_values(state, chars):
     if state == "Unlock":
         with sqlite3.connect(path) as connection:
             c = connection.cursor()
-            c.execute("SELECT LOC,Secret FROM "+MAP_DB+" WHERE Secret LIKE '%Unlock%'")
+            c.execute("SELECT LOC,Secret FROM " + MAP_DB + " WHERE Secret LIKE '%Unlock%'")
             for row in c.fetchall():
                 segment = row[0]
                 value = str(row[1])[10:-1]              # Since unlock is uniform in the database, we'll just translate it on the fly.
                 x = 70 * (ord(segment[1]) - 65) + 13
-                y = 48 * (int(segment[0])-1) + 0
-                item = pygame.image.load(os.path.join('assets', 'icons', value+".png")).convert_alpha()
-                item = pygame.transform.scale(item, (50,50))
-                DISPLAY.blit(item,  [x,y,150,150])
+                y = 48 * (int(segment[0]) - 1) + 0
+                item = pygame.image.load(os.path.join('assets', 'icons', value + ".png")).convert_alpha()
+                item = pygame.transform.scale(item, (50, 50))
+                DISPLAY.blit(item, [x, y, 150, 150])
 
-    ##### For Unlocking Costumes
+    # For Unlocking Costumes
     if state == "Costume":
         with sqlite3.connect(path) as connection:
             c = connection.cursor()
@@ -867,118 +926,16 @@ def find(self, value):
 
 if __name__ == '__main__':
 
-    SIZE = [1120, 435]
-    DISPLAY = pygame.display.set_mode(SIZE)                                 # Create Display
-    FPSCLOCK = pygame.time.Clock()                                          # Create Clock
-    FPS = 60                                                                # FPS amount.
     pygame.init()                                                           # Initilize Pygame
     pygame.display.set_caption("Hyrule Warriors Interactive Map")           # Set Title
-    EXIT = False                                                            # Exit program flag
 
     # Local Variables
     volume_bar = 1050
     old_volume = 1050
-    mouse_event = False
-    mouse_x = 0 
-    mouse_y = 0
-    char = "Link"
-    item = "Weapon"
-    MAP_DB = "normal"
-    temp_var = None
-    adv_menu_state = 0                              # State of the adv_menu.
-    mouse_held = False                              # State of mouse if being held down.
-    is_muted = False                                # Is the sound muted?
-    volume_hitbox = pygame.Rect([1020,395,100,40])  # Hitbox for the volume knob.
-    path = os.path.join("assets", MAP_DB, "overworld.png")
 
-    DISPLAY.blit(pygame.image.load(path), [0,0,500,500])
+    load_menu()
     pygame.mixer.music.load(os.path.join("assets", "theme.mp3"))
     pygame.mixer.music.play(-1)
     adjust_volume(volume_bar)
-    draw_grid()
-    adv_menu_box()
 
-    while not EXIT:
-        mouse_event = False
-        mouse_x = 0 
-        mouse_y = 0
-
-        for event in pygame.event.get():
-            if event.type == QUIT:                          # Exit (X button)
-                pygame.quit()
-                sys.exit()
-            elif event.type == MOUSEBUTTONUP:               # Mouse click/location Event
-                mouse_x, mouse_y = event.pos
-                mouse_event = True
-                mouse_held = False
-                #print event.pos
-            elif event.type == MOUSEBUTTONDOWN:
-                mouse_x, mouse_y = event.pos
-                mouse_held = True
-
-        if mouse_event:
-            if mouse_y < 385:                                                                           # If they're clicking a tile, go here.
-                load_tile([mouse_x, mouse_y], is_muted, old_volume)
-                load_menu(adv_menu_state, char, item)                                                   # Reload the main menu / map.
-                if pygame.mixer.music.get_volume() == 0:
-                    is_muted = True
-                    adjust_volume(1030)
-                else:
-                    adjust_volume((pygame.mixer.music.get_volume()*100)+1030)
-            elif mouse_y > 395:                                                                         # If they're not, figure out if they're clicking the options our sound
-                if mouse_x >= 190 and mouse_x <= 210:                                                   # Approximate Hitbox of Item Knob
-                    play_sound()
-                    temp_var = adv_item_box()
-                    if temp_var:
-                        item = temp_var
-                        if item == "Skulltula" or item == "Items" or item == "Unlock" or item == "Costume":
-                            adv_menu_state = 2
-                        else: 
-                            adv_menu_state = 0
-                    load_menu(adv_menu_state, char, item)
-                    find_values(item,char)
-                    if pygame.mixer.music.get_volume() == 0:
-                        is_muted = True
-                        adjust_volume(1030)
-                    else:
-                        adjust_volume((pygame.mixer.music.get_volume()*100)+1030)
-                if mouse_x >= 250 and mouse_x <= 275 and adv_menu_state != 2:                           # Approximate Hitbox of Character Knob
-                    play_sound()
-                    temp_var = adv_char_box()
-                    if temp_var:
-                        char = temp_var
-                    load_menu(adv_menu_state, char, item)
-                    find_values(item,char)
-                if mouse_x >= 1000 and mouse_x <= 1020:                                                 # Approximate Hitbox of Volume Knob
-                    is_muted = not is_muted
-                    if is_muted:
-                        old_volume = pygame.mixer.music.get_volume() * 100 + 1030
-                        adjust_volume(1030)
-                    else:
-                        adjust_volume(old_volume)
-                if mouse_x >= 470 and mouse_x <= 650:                                                   # Approximate Hitbox of Map Select
-                    play_sound()
-                    MAP_DB = adv_map_select()
-                    load_menu(adv_menu_state, char, item)
-                    if pygame.mixer.music.get_volume() == 0:
-                        is_muted = True
-                        adjust_volume(1030)
-                    else:
-                        adjust_volume((pygame.mixer.music.get_volume()*100)+1030)
-                if mouse_x >= 884 and mouse_x <= 926:
-                    play_sound()
-                    adv_help_guide()
-                    load_menu(adv_menu_state, char, item)
-                    if pygame.mixer.music.get_volume() == 0:
-                        is_muted = True
-                        adjust_volume(1030)
-                    else:
-                        adjust_volume((pygame.mixer.music.get_volume()*100)+1030)
-
-        if mouse_held and volume_hitbox.collidepoint(pygame.mouse.get_pos()):
-            is_muted = False
-            adjust_volume(pygame.mouse.get_pos()[0])
-
-        pygame.display.update()
-        FPSCLOCK.tick(FPS)
-        pygame.event.pump() # Process event queue.
+    event_loop()

@@ -385,7 +385,7 @@ def return_image_set(text):
 
     # Find Item (load images)
     for i in items:
-        if text.find(item) != -1:
+        if text.find(i) != -1:
             item = "{}.png".format(i)
             break
     else:

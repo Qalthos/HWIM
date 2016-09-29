@@ -322,46 +322,39 @@ def load_info(segment):
 def return_image_set(text):
     """Returns the icon set and dialog for victory rewards for a specific
     tile."""
-    item = None
-    char = None
+
+    items = ['PHeart', 'CHeart', 'Skulltula', 'Weapon', 'Unlock', 'Costume']
+    characters = ['Link', 'Impa', 'Lana', 'Sheik', 'Ganondorf', 'Darunia',
+                  'Ruto', 'Agitha', 'Midna', 'Zant', 'Fi', 'Ghirahim', 'Volga',
+                  'Twili', 'Wizzro', 'Cia', 'Youngling', 'Tingle']
 
     # Find Item (load images)
-    if text.find("PHeart")!=-1: item = "PHeart.png"
-    elif text.find("CHeart")!=-1: item = "CHeart.png"
-    elif text.find("Skulltula")!=-1: item = "Skulltula.png"
-    elif text.find("Weapon")!=-1: item = "Weapon.png"
-    elif text.find("Unlock")!=-1: item = "Unlock.png"
-    elif text.find("Costume")!=-1: item = "Costume.png"
+    for i in items:
+        if text.find(item) != -1:
+            item = "{}.png".format(i)
+            break
+    else:
+        item = None
+
     # Find Character (load images)
-    if text.find("[Link]")!=-1: char = "Link.png"
-    elif text.find("[Impa]")!=-1: char = "Impa.png"
-    elif text.find("[Lana]")!=-1: char = "Lana.png"
-    elif text.find("[Zelda]")!=-1: char = "Zelda.png"
-    elif text.find("[Sheik]")!=-1: char = "Sheik.png"
-    elif text.find("[Gannondorf]")!=-1: char = "Gannondorf.png"
-    elif text.find("[Darunia]")!=-1: char = "Darunia.png"
-    elif text.find("[Ruto]")!=-1: char = "Ruto.png"
-    elif text.find("[Agitha]")!=-1: char = "Agitha.png"
-    elif text.find("[Midna]")!=-1: char = "Midna.png"
-    elif text.find("[Zant]")!=-1: char = "Zant.png"
-    elif text.find("[Fi]")!=-1: char = "Fi.png"
-    elif text.find("[Ghirahim]")!=-1: char = "Ghirahim.png"
-    elif text.find("[Volga]")!=-1: char = "Volga.png"
-    elif text.find("[Twili]")!=-1: char = "Twili.png"
-    elif text.find("[Wizzro]")!=-1: char = "Wizzro.png"
-    elif text.find("[Cia]")!=-1: char = "Cia.png"
-    elif text.find("[Youngling]")!=-1: char = "Youngling.png"
-    elif text.find("[Tingle]")!=-1: char = "Tingle.png"
+    for c in characters:
+        if text.find("[{}]".format(c)) != -1:
+            char = "{}.png".format(c)
+            break
+    else:
+        char = None
 
     if char or item:
         i = 0                                   # Kill switch if the database is glitched
-        while text.find("]") != -1: 
+        while text.find("]") != -1:
             text = text[text.find("]")+2:]
-            if i>4: break 
-            else: i = i+1
+            if i > 4:
+                break
+            else:
+                i = i+1
         text = str(text)
         text.replace("u'", "")
-        return [char,item,text]
+        return [char, item, text]
     else:
         return text                                 # Return just text.
 

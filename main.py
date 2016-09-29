@@ -1,5 +1,10 @@
-import sys, pygame, time, os, math, sqlite3
-from pygame.locals import *
+import math
+import os
+import sys
+import sqlite3
+
+import pygame
+from pygame.locals import K_ESCAPE, KEYDOWN, KEYUP, MOUSEBUTTONDOWN, MOUSEBUTTONUP, QUIT
 
 global FPSCLOCK, DISPLAY                                                # Create Clock and Display Vars
 global MAP_DB
